@@ -42,7 +42,8 @@ function criarGrupoDeCirculos(listaDePontos, estilo) {
             properties: {
                 localizacao: ponto.localizacao,
                 data: ponto.data,
-                aisp: ponto.aisp
+                aisp: ponto.aisp,
+                tipo_prioridade: ponto.tipo_prioridade
             }
         };
         

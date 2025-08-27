@@ -2,8 +2,6 @@ import { initializeMap } from './map.js';
 import { createBaseLayers, createOverlayLayers } from './layers.js';
 import { addLayerControl } from './controls.js';
 import { com_AE, COM_OBITO, SEM_AE, refem, vitimizacao, danos_colaterais } from './dados.js';
-// ADICIONADO: Importa a função de inicialização do chatbot
-import { initializeChatbot } from './chatbot.js'; 
 
 // Variável global para armazenar a última coordenada clicada para o Street View
 let ultimaCoordenadaClicada = null;
@@ -33,8 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const aispApplyButton = document.getElementById('aisp-apply-btn');
     const aispSearchInput = document.getElementById('aisp-search-input');
 
-    // --- 2. CRIAÇÃO E GERENCIAMENTO DO FILTRO DE AISP ---
+    // ADICIONADO: Referência para filtro de prioridade
+    const priorityListContainer = document.getElementById('priority-list');
+    const priorityApplyButton = document.getElementById('priority-apply-btn');
+
+    // --- 2. CRIAÇÃO E GERENCIAMENTO DOS FILTROS ---
     const todosOsPontos = [...com_AE, ...COM_OBITO, ...SEM_AE, ...vitimizacao, ...danos_colaterais, ...refem ];
+    
+    // ---- Filtro de AISP ----
     const todasAsAisps = todosOsPontos.map(ocorrencia => ocorrencia.aisp);
     const aispsUnicas = [...new Set(todasAsAisps)].sort();
 
@@ -55,7 +59,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // LÓGICA PARA FILTRAR A LISTA DE CHECKBOXES DE AISP
+    // ---- Filtro de Prioridade ----
+    const tiposPrioridadeUnicos = [...new Set(todosOsPontos.map(p => p.tipo_prioridade).filter(Boolean))].sort();
+
+    tiposPrioridadeUnicos.forEach(tipo => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'priority-item';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = tipo;
+        checkbox.value = tipo;
+        const label = document.createElement('label');
+        label.htmlFor = tipo;
+        label.textContent = tipo;
+        itemDiv.appendChild(checkbox);
+        itemDiv.appendChild(label);
+        priorityListContainer.appendChild(itemDiv);
+    });
+
+    // --- LÓGICA PARA FILTRAR A LISTA DE CHECKBOXES DE AISP ---
     aispSearchInput.addEventListener('input', () => {
         const searchTerm = aispSearchInput.value.toLowerCase();
         const aispItems = aispListContainer.getElementsByClassName('aisp-item');
@@ -71,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 3. LÓGICA DE FILTRAGEM E RESET ---
-    
     function mostrarTodasAsCamadas() {
         Object.values(overlayLayers).forEach(grupo => {
             grupo.eachLayer(layer => {
@@ -158,6 +179,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resetButton) resetButton.style.display = 'block';
     }
 
+    // --- NOVO: filtro por prioridade ---
+    function aplicarFiltroPrioridade() {
+        const checkboxesMarcados = document.querySelectorAll('#priority-list input:checked');
+        const prioridadesSelecionadas = Array.from(checkboxesMarcados).map(cb => cb.value);
+        mostrarTodasAsCamadas();
+
+        if (prioridadesSelecionadas.length === 0) {
+            resetarFiltro(true);
+            return;
+        }
+
+        const layersFiltrados = [];
+        Object.values(overlayLayers).forEach(grupo => {
+            grupo.eachLayer(layer => {
+                if (prioridadesSelecionadas.includes(layer.feature.properties.tipo_prioridade)) {
+                    layersFiltrados.push(layer);
+                } else {
+                    layer.removeFrom(map);
+                }
+            });
+        });
+
+        if (layersFiltrados.length > 0) {
+            const grupoParaZoom = L.featureGroup(layersFiltrados);
+            map.fitBounds(grupoParaZoom.getBounds().pad(0.1));
+        }
+
+        alert(`Exibindo ${layersFiltrados.length} pontos para as prioridades selecionadas.`);
+        if (resetButton) resetButton.style.display = 'block';
+    }
+
     function resetarFiltro(mostrarAlerta = true) {
         mostrarTodasAsCamadas();
         if (resetButton) resetButton.style.display = 'none';
@@ -165,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('start-date').value = '';
         document.getElementById('end-date').value = '';
         document.querySelectorAll('#aisp-list input:checked').forEach(cb => cb.checked = false);
+        document.querySelectorAll('#priority-list input:checked').forEach(cb => cb.checked = false);
 
         if (mostrarAlerta) alert("Todos os filtros foram removidos.");
     }
@@ -180,6 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (aispApplyButton) {
         aispApplyButton.addEventListener('click', aplicarFiltroAISP);
+    }
+
+    if (priorityApplyButton) {
+        priorityApplyButton.addEventListener('click', aplicarFiltroPrioridade);
     }
     
     // --- 5. CONTROLES DO MAPA ---
@@ -230,6 +287,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 6. INICIALIZAÇÃO DO CHATBOT ---
     // ADICIONADO: Chama a função do chatbot, passando todos os dados para ele.
-    initializeChatbot(todosOsPontos);
-
 });
