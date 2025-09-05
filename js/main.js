@@ -16,7 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- mapa ---
     const map = initializeMap('map');
+
+    // 🔹 CRIA OS PANES ANTES DE CRIAR/ADICIONAR QUALQUER CAMADA
+    map.createPane('paneAisps');   // polígonos atrás
+    map.getPane('paneAisps').style.zIndex = 400;
+
+    map.createPane('panePontos');  // pontos na frente
+    map.getPane('panePontos').style.zIndex = 650;
+
+    // --- camadas base e sobreposições ---
     const baseLayers = createBaseLayers();
     const overlayLayers = createOverlayLayers();
 
@@ -31,23 +41,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- AISPs (polígonos) ---
     const aisps = [
+        { nome: "AISP 01-BARRIS", arquivo: "AISP01_Barris.geojson", cor: "#53452bff" },
         { nome: "AISP 02-LIBERDADE", arquivo: "aisp_liberdade.geojson", cor: "#2563eb" },
-        { nome: "AISP 13-CAJAZEIRAS", arquivo: "AISP13_Cajazeiras.geojson", cor: "#16a34a" },
-        { nome: "AISP 15-NORDESTE", arquivo: "AISP15_Nordeste.geojson", cor: "#db2777" },
+        { nome: "AISP 03-BONFIM", arquivo: "AISP03_Bonfim.geojson", cor: "#f80ef8ff" },
         { nome: "AISP 04-SAO CAETANO", arquivo: "AISP04_Sao_Caetano.geojson", cor: "#060ad9ff" },
-        { nome: "AISP Pituba", arquivo: "AISP16_Pituba.geojson", cor: "#14b8a6" },
-        { nome: "AISP 14-BARRA", arquivo: "AISP14_Barra.geojson", cor: "#8b5cf6" },
+        { nome: "AISP 05-PERIPERI", arquivo: "AISP05_Periperi.geojson", cor: "#f59e0b" },
+        { nome: "AISP 06-BROTAS", arquivo: "AISP06_Brotas.geojson", cor: "#20b1b1ff" },
+        { nome: "AISP 07-RIO VERMELHO", arquivo: "AISP07_Rio_Vermelho.geojson", cor: "#3b82f6" },
+        { nome: "AISP 08-CIA", arquivo: "AISP08_Cia.geojson", cor: "#f97316" },
+        { nome: "AISP 09-BOCA DO RIO", arquivo: "AISP09_Boca_Rio.geojson", cor: "#3b82f6" },
+        { nome: "AISP 10-PAU DA LIMA", arquivo: "AISP10_Pau_Lima.geojson", cor: "#708a94ff" },
         { nome: "AISP 11-TANCREDO NEVES", arquivo: "AISP11_Tancredo_Neves.geojson", cor: "#e11d48" },
         { nome: "AISP 12-ITAPUA", arquivo: "AISP12_Itapua.geojson", cor: "#02240eff" },
-        { nome: "AISP 07-RIO VERMELHO", arquivo: "AISP07_Rio_Vermelho.geojson", cor: "#3b82f6" },
-        { nome: "AISP 05-PERIPERI", arquivo: "AISP05_Periperi.geojson", cor: "#f59e0b" },
-        { nome: "AISP 10-PAU DA LIMA", arquivo: "AISP10_Pau_Lima.geojson", cor: "#5acaf7ff" },
-        { nome: "AISP 08-CIA", arquivo: "AISP08_Cia.geojson", cor: "#f97316" },
-        { nome: "AISP 06-BROTAS", arquivo: "AISP06_Brotas.geojson", cor: "#f81492ff" },    
-        { nome: "AISP 09-BOCA DO RIO", arquivo: "AISP09_Boca_Rio.geojson", cor: "#3b82f6" },
-        { nome: "AISP 03-BONFIM", arquivo: "AISP03_Bonfim.geojson", cor: "#f80ef8ff" },
-        { nome: "AISP 01-BARRIS", arquivo: "AISP01_Barris.geojson", cor: "#53452bff" }
+        { nome: "AISP 13-CAJAZEIRAS", arquivo: "AISP13_Cajazeiras.geojson", cor: "#ff3c00ff" },
+        { nome: "AISP 14-BARRA", arquivo: "AISP14_Barra.geojson", cor: "#8b5cf6" },
+        { nome: "AISP 15-NORDESTE", arquivo: "AISP15_Nordeste.geojson", cor: "#db2777" },
+        { nome: "AISP 16-PITUBA", arquivo: "AISP16_Pituba.geojson", cor: ""},
+        { nome: "AISP 23-LAURO DE FREITAS", arquivo: "", cor: ""},
+        { nome: "AISP 24-SIMOES FILHO", arquivo: "", cor: ""},
+        { nome: "AISP 25-POJUCA", arquivo: "", cor: ""},
+        { nome: "AISP 26-CANDEIAS", arquivo: "", cor: ""},
+        { nome: "AISP 27-VERA CRUZ", arquivo: "", cor: ""},
+        { nome: "AISP 28-DIAS D AVILA", arquivo: "", cor: ""},
+        { nome: "AISP 29-ALAGOINHAS", arquivo: "", cor: ""},
+        { nome: "AISP 30-BARREIRAS", arquivo: "", cor: ""},
+        { nome: "AISP 31-BOM JESUS DA LAPA", arquivo: "", cor:""},
     ];
 
     aisps.forEach(cfg => {
@@ -57,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- filtros dinâmicos ---
     const resetButton = document.getElementById('resete-mapa');
     const aispListContainer = document.getElementById('aisp-list');
     const aispSearchInput = document.getElementById('aisp-search-input');
